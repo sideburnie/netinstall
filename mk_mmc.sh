@@ -45,6 +45,7 @@ DIST=stretch
 ARCH=armhf
 DISTARCH="${DIST}-${ARCH}"
 deb_distribution="debian"
+preseed_file_name=""
 
 DIR="$PWD"
 TEMPDIR=$(mktemp -d)
@@ -748,7 +749,13 @@ initrd_preseed_settings () {
 	finish_installing_device
 	setup_parition_recipe
 	cp -v "${DIR}/lib/shared/zz-uenv_txt" "${TEMPDIR}/initrd-tree/zz-uenv_txt"
-	cp -v "${DIR}/lib/${DIST}-preseed.cfg" "${TEMPDIR}/initrd-tree/preseed.cfg"
+    if [ "${preseed_file_name}" != "" ]; then
+        echo "using preseed ${preseed_file_name}!"
+        cp -v "${DIR}/lib/${preseed_file_name}" "${TEMPDIR}/initrd-tree/preseed.cfg"
+    else
+        echo "using preseed ${DIST}-preseed.cfg!"
+        cp -v "${DIR}/lib/${DIST}-preseed.cfg" "${TEMPDIR}/initrd-tree/preseed.cfg"
+    fi
 
 	if [ ! "x${deb_not_in_repo}" = "xenable" ] ; then
 		#repos.rcn-ee.com: add linux-image-${uname -r}
@@ -1559,6 +1566,10 @@ while [ ! -z "$1" ] ; do
 		checkparm $2
 		DISTRO_TYPE="$2"
 		check_distro
+		;;
+	--preseed)
+		checkparm $2
+		preseed_file_name="$2"
 		;;
 	--firmware)
 		FIRMWARE=1
